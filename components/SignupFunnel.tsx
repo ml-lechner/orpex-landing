@@ -33,7 +33,6 @@ export default function SignupFunnel({
   const [step, setStep] = useState(1)
   const [form, setForm] = useState<FunnelState>(initialState)
   const [submitting, setSubmitting] = useState(false)
-  const [waitlistNum, setWaitlistNum] = useState<string | number>('—')
   const emailRef = useRef<HTMLInputElement>(null)
 
   const totalSteps = 6
@@ -42,7 +41,6 @@ export default function SignupFunnel({
     if (isOpen) {
       setStep(1)
       setForm({ ...initialState, email: prefillEmail || '' })
-      setWaitlistNum('—')
       document.body.style.overflow = 'hidden'
       setTimeout(() => emailRef.current?.focus(), 100)
     } else {
@@ -89,7 +87,6 @@ export default function SignupFunnel({
 
   const submit = async () => {
     setSubmitting(true)
-    let position: string | number = '—'
     try {
       await supabase.from('waitlist').insert([{
         email: form.email,
@@ -105,12 +102,9 @@ export default function SignupFunnel({
         needs: form.needs || null,
         referrer: typeof window !== 'undefined' ? document.referrer || null : null
       }])
-      const { count } = await supabase.from('waitlist').select('*', { count: 'exact', head: true })
-      if (count) position = count
     } catch {
       // Still show success
     }
-    setWaitlistNum(position)
     setSubmitting(false)
     setStep(7)
   }
@@ -330,8 +324,6 @@ export default function SignupFunnel({
             <div className="funnel-done">
               <div className="funnel-done-icon">✓</div>
               <h2>You&apos;re in!</h2>
-              <div className="waitlist-num">#{waitlistNum}</div>
-              <div className="waitlist-label">on the waitlist</div>
               <p>We&apos;re onboarding design partners in small batches. We&apos;ll reach out soon with next steps. In the meantime, keep building — your AI workforce is almost ready.</p>
               <div className="funnel-actions" style={{ justifyContent: 'center', marginTop: '20px' }}>
                 <button className="funnel-next" onClick={onClose} style={{ maxWidth: '200px' }}>Back to Home</button>
