@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 type FunnelState = {
   email: string
@@ -88,20 +87,27 @@ export default function SignupFunnel({
   const submit = async () => {
     setSubmitting(true)
     try {
-      await supabase.from('waitlist').insert([{
-        email: form.email,
-        full_name: form.name,
-        role: form.role || null,
-        company_name: form.company,
-        building: form.building || null,
-        industry: form.industry || null,
-        stage: form.stage || null,
-        team_size: form.teamSize || null,
-        pain_points: form.pains,
-        source: form.source || null,
-        needs: form.needs || null,
-        referrer: typeof window !== 'undefined' ? document.referrer || null : null
-      }])
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email,
+          full_name: form.name,
+          role: form.role || null,
+          company_name: form.company,
+          building: form.building || null,
+          industry: form.industry || null,
+          stage: form.stage || null,
+          team_size: form.teamSize || null,
+          pain_points: form.pains,
+          source: form.source || null,
+          needs: form.needs || null,
+          referrer: typeof window !== 'undefined' ? document.referrer || null : null,
+        }),
+      })
+      if (!res.ok) {
+        console.error('Waitlist submission failed:', await res.text())
+      }
     } catch {
       // Still show success
     }
